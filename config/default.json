@@ -1,0 +1,9 @@
+{
+  "slack": {
+    "user_token": "",
+    "command_token": ""
+  },
+  "app": {
+    "cookie_secret": "abc"
+  }
+}

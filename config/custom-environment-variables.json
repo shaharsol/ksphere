@@ -1,0 +1,6 @@
+{
+	"slack": {
+		"user_token": "SLACK_USER_TOKEN",
+		"command_token": "SLACK_COMMAND_TOKEN"
+	}
+}
