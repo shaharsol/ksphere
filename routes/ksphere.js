@@ -16,18 +16,29 @@ var marked = require('marked');
 
 
 router.post('/', function(req, res, next) {
+
+  // first response to slack
+  res.send('thinking...');
+
   console.log('recieved query: %s',req.body.text)
   // var users = {};
   var usersArray = [];
   var answer = '';
   if(req.body.token != config.get('slack.command_token')){
     console.log('somebody spoofing us!')
-    res.sendStatus(500);
+    // res.sendStatus(500);
+  }else if(!req.body.text){
+    answerSlack(req.body.response_url,'Can\'t search an empty string partner',function(err){
+      if(err){
+        console.log('error answering slack: %s',err)
+      }
+    })
   }else{
+
     searchSlack(req.body.text,function(err,matches){
       if(err){
         console.log('error in searchSlack: %s',err)
-        res.sendStatus(500)
+        // res.sendStatus(500)
       }else{
         console.log('matches are: %s',util.inspect(matches))
         if(matches.length == 0){
@@ -76,16 +87,9 @@ router.post('/', function(req, res, next) {
           // answer = bestUser;
         }
 
-        request.post(req.body.response_url,{body: JSON.stringify({text: answer})},function(error,response,body){
-          if(error){
-            console.log('error posting answer to slack: %s',error)
-    				res.sendStatus(500)
-    			}else if(response.statusCode > 300){
-            console.log('error posting answer to slack: %s : %s',response.statusCode,body)
-            res.sendStatus(500)
-    			}else{
-            // all is cool
-            console.log('responded successful to slack')
+        answerSlack(req.body.response_url,answer,function(err){
+          if(err){
+            console.log('error answering slack: %s',err)
           }
         })
       }
@@ -93,6 +97,18 @@ router.post('/', function(req, res, next) {
 
   }
 });
+
+function answerSlack(responseUrl,answer,callback){
+  request.post(responseUrl,{body: JSON.stringify({text: answer})},function(error,response,body){
+    if(error){
+      callback(error)
+    }else if(response.statusCode > 300){
+      callback(response.statusCode + ' : ' + body)
+    }else{
+      callback(null)
+    }
+  })
+}
 
 function searchSlack(query,callback){
   var matches = [];
