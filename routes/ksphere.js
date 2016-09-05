@@ -21,7 +21,6 @@ router.post('/', function(req, res, next) {
   res.send('thinking...');
 
   console.log('recieved query: %s',req.body.text)
-  // var users = {};
   var usersArray = [];
   var answer = '';
   if(req.body.token != config.get('slack.command_token')){
@@ -62,11 +61,6 @@ router.post('/', function(req, res, next) {
                 usersArray[userIndex].count += 1;
               }
 
-              // if(!(match.username in users)){
-              //   users[match.username] = 1;
-              // }else{
-              //   users[match.username] += 1;
-              // }
             }
           })
 

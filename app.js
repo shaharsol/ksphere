@@ -12,24 +12,24 @@ var MongoStore = require('connect-mongo')(session);
 
 
 //mongo
-var mongo = require('mongodb');
-var monk = require('monk');
-var mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/ksphere';
-var db = monk(mongoUri);
+// var mongo = require('mongodb');
+// var monk = require('monk');
+// var mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/ksphere';
+// var db = monk(mongoUri);
 
 var ksphere = require('./routes/ksphere');
 
 var app = express();
 
-app.use(session({
-	secret: config.get('app.cookie_secret'),
-	resave: false,
-	saveUninitialized: false,
-	store: new MongoStore({
-		url: mongoUri,
-		autoReconnect: true
-	})
-}));
+// app.use(session({
+// 	secret: config.get('app.cookie_secret'),
+// 	resave: false,
+// 	saveUninitialized: false,
+// 	store: new MongoStore({
+// 		url: mongoUri,
+// 		autoReconnect: true
+// 	})
+// }));
 
 app.use(partials());
 
@@ -51,10 +51,10 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 
-app.use(function(req,res,next){
-    req.db = db;
-    next();
-});
+// app.use(function(req,res,next){
+//     req.db = db;
+//     next();
+// });
 
 
 app.use('/ksphere', ksphere);
