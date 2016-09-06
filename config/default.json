@@ -1,7 +1,9 @@
 {
   "slack": {
     "user_token": "",
-    "command_token": ""
+    "command_token": "",
+    "client_id" : "2341365858.76624650449",
+    "client_secret": ""
   },
   "app": {
     "cookie_secret": "abc"
