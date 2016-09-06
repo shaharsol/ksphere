@@ -11,7 +11,9 @@ router.get('/', function(req, res, next) {
 			team: req.session.team
 		});
 	}else{
-		res.render('index/index');
+		res.render('index/index',{
+			config: config
+		});
 	}
 });
 
