@@ -171,7 +171,7 @@ router.post('/button-pressed', function(req, res, next) {
 
   getUser(req.db,payload.user.id,function(err,user){
     if(err){
-
+      console.log('err in getting user: %s',err)
     }else if(!user){
       handleUnregisteredUser(req.db,payload,function(err){
           console.log('error in handleUnregisteredUser: %s',err)
@@ -205,7 +205,7 @@ function handleUnregisteredUser(db,payload,callback){
 
 function savePayload(db,payload,callback){
   var payloads = db.get('payloads');
-  paylaods.insert(payload,function(err,payload){
+  payloads.insert(payload,function(err,payload){
     callback(err,payload)
   })
 }
@@ -247,9 +247,9 @@ function getQuestion(db,questionID,callback){
   })
 }
 
-function getUser(db,slackUserID,callback){
+function getUser(db,userID,callback){
   var users = db.get('users');
-  users.findOne({slack_user_id: slackUserID},function(err,user){
+  users.findOne({user_id: userID},function(err,user){
     callback(err,user)
   })
 }

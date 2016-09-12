@@ -85,7 +85,7 @@ console.log('receievd this from slack: %s',util.inspect(data))
 						}
 					],function(err){
 						if(err){
-
+							console.log('err in dealing with payload: %s',err)
 						}else{
 							delete req.session.payloadID
 							res.redirect('/');
