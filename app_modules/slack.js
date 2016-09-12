@@ -24,16 +24,36 @@ module.exports = {
       function(user,question,callback){
         console.log('payload is %s',util.inspect(payload))
         if(payload.actions[0].value == 'channel'){
-          processChannel(user.access_token,question,function(err){
-            callback(err)
+          processChannel(user.access_token,question,function(err,channel){
+            callback(err,channel)
           })
         }else if(payload.actions[0].value == 'group'){
-          processGroup(user.access_token,question,function(err){
-            callback(err)
+          processGroup(user.access_token,question,function(err,group){
+            callback(err,group)
           })
         }else{
           callback('unrecognized action')
         }
+      },
+      // respond to user
+      function(channel,callback){
+        var answer = util.format('Channel <#%s|%s> has been created and the relevant people invited',channel.id,channel.name)
+        request.post(payload.response_url,{body: JSON.stringify({text: answer}})},function(error,response,body){
+          if(error){
+            callback(error)
+          }else if(response.statusCode > 300){
+            callback(response.statusCode + ' : ' + body)
+          }else{
+            callback(null)
+          }
+        })
+      },
+      // delete payload
+      function(callback){
+        var payloads = db.get('payloads');
+        payloads.remove({callback_id: payload.callback_id},function(err){
+          callback(err)
+        })
       }
     ],function(err){
       callback(err)
@@ -123,10 +143,10 @@ function processChannel(accessToken,question,callback){
         })
 
       },function(err){
-        callback(err)
+        callback(err,channel)
       })
     },
-  ],function(err){
-    callback(err)
+  ],function(err,channel){
+    callback(err,channel)
   })
 }
