@@ -12,7 +12,7 @@ var nl2br = require('nl2br');
 var marked = require('marked');
 
 // var errorHandler = require('../app_modules/error');
-// var github = require('../app_modules/github');
+var slack = require('../app_modules/slack');
 
 
 router.post('/', function(req, res, next) {
@@ -169,35 +169,46 @@ router.post('/button-pressed', function(req, res, next) {
   console.log('body is: %s',util.inspect(req.body.payload))
   var payload = JSON.parse(req.body.payload);
 
+  getUser(req.db,payload.user.id,function(err,user){
+    if(err){
 
-
-
-  async.waterfall([
-    function(callback){
-      getUser(req.db,payload.user.id,function(err,user){
-        callback(err,user)
+    }else if(!user){
+      handleUnregisteredUser(req.db,payload,function(err){
+          console.log('error in handleUnregisteredUser: %s',err)
       })
-    },
-    function(user,callback){
-      if(!user){
-        callback('no user')
-      }else{
-        getQuestion(req.db,payload.callback_id,function(err,question){
-          callback(err,team,question)
-        })
-      }
-    }
-  ],function(err){
-    if(err == 'no user'){
-      req.session.lastCommand = payload;
-      answerSlack(payload.response_url,{text: util.format('To complete thw action, please authorize us at http://%s/slack/authorize-user',config.get('app.domain'))},function(err){
-        console.log('error answeirng slack: %s',err)
+    }else{
+      slack.handlePayload(req.db,payload,function(err){
+        console.log('error in handlePayload: %s',err)
+
       })
     }
   })
 
 })
 
+function handleUnregisteredUser(db,payload,callback){
+  async.waterfall([
+    function(callback){
+      savePayload(db,payload,function(err,payload){
+        callback(err,payload)
+      })
+    },
+    function(payload,callback){
+      answerSlack(payload.response_url,{text: util.format('To complete thw action, please authorize us at http://%s/slack/authorize-user/%s',config.get('app.domain'),payload._id)},function(err){
+        callback(err)
+      })
+    }
+  ],function(err){
+    callback(err)
+  })
+}
+
+function savePayload(db,payload,callback){
+  var payloads = db.get('payloads');
+  paylaods.insert(payload,function(err,payload){
+    callback(err,payload)
+  })
+}
 
 function channelJoinAndInvite(accessToken,question,callback){
   async.waterfall([
