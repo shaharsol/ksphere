@@ -163,14 +163,83 @@ router.post('/', function(req, res, next) {
 
 
 router.post('/button-pressed', function(req, res, next) {
+
+  res.send('processing...');
+
   console.log('body is: %s',util.inspect(req.body.payload))
+  var payload = JSON.parse(req.body.payload);
+
+
+
+
+  async.waterfall([
+    function(callback){
+      getUser(req.db,payload.user.id,function(err,user){
+        callback(err,user)
+      })
+    },
+    function(user,callback){
+      if(!user){
+        callback('no user')
+      }else{
+        getQuestion(req.db,payload.callback_id,function(err,question){
+          callback(err,team,question)
+        })
+      }
+    }
+  ],function(err){
+    if(err == 'no user'){
+      req.session.lastCommand = payload;
+      answerSlack(payload.response_url,{text: util.format('To complete thw action, please authorize us at http://%s/slack/authorize-user',config.get('app.domain'))},function(err){
+        console.log('error answeirng slack: %s',err)
+      })
+    }
+  })
+
 })
 
+
+function channelJoinAndInvite(accessToken,question,callback){
+  async.waterfall([
+    function(callback){
+      var form = {
+        token: accessToken,
+        name: util.format('KSphere %s',question._id.toString())
+      }
+      request.post('https://slack.com/api/channels.join',{form: form},function(error,response,body){
+        if(error){
+          callback(error)
+        }else if(response.statusCode > 300){
+          callback(response.statusCode + ' : ' + body)
+        }else{
+          var data = JSON.parse(body)
+          callback(null,data.channel)
+        }
+      })
+    }
+  ],function(err){
+    callback(err)
+  })
+}
 
 function getTeam(db,teamID,callback){
   var teams = db.get('teams');
   teams.findOne({team_id: teamID},function(err,team){
     callback(err,team)
+  })
+}
+
+function getQuestion(db,questionID,callback){
+  var questions = db.get('questions');
+  questions.findOne({_id: questionID},function(err,question){
+    callback(err,question)
+  })
+}
+
+function getUser(db,slackUserID,callback){
+  var users = db.get('users');
+  users.findOne({slack_user_id: slackUserID},function(err,user){
+    callback(err,user)
   })
 }
 

@@ -10,6 +10,11 @@ router.get('/authorize', function(req, res, next) {
 	res.end();
 });
 
+router.get('/authorize-user', function(req, res, next) {
+	res.writeHead(302, {'Location': 'https://slack.com/oauth/authorize?client_id=' + config.get('slack.client_id') + '&redirect_uri=http://' + config.get('app.domain') + '/slack/authorized-user&scope=channels:write,groups:write' });
+	res.end();
+});
+
 router.get('/authorized', function(req, res, next) {
 	console.log('code is %s',req.query.code);
 	var form = {
@@ -39,4 +44,33 @@ console.log('receievd this from slack: %s',util.inspect(data))
 	})
 });
 
+router.get('/authorized-user', function(req, res, next) {
+	console.log('code is %s',req.query.code);
+	var form = {
+		client_id: config.get('slack.client_id'),
+		client_secret: config.get('slack.client_secret'),
+		redirect_uri: 'http://' + config.get('app.domain') + '/slack/authorized-user',
+		code: req.query.code,
+	}
+	request.post('https://slack.com/api/oauth.access',{form: form},function(error,response,body){
+		if(error){
+			console.log('error in slack oath %s',error);
+		}else if(response.statusCode > 300){
+			console.log('error in slack oath %s %s',response.statusCode,body);
+		}else{
+			var data = JSON.parse(body);
+console.log('receievd this from slack: %s',util.inspect(data))
+			var users = req.db.get('users');
+			users.findAndModify({'user_id': data.user_id},data,{upsert: true,new: true},function(err,user){
+				if(err){
+					console.log('error inserting user %s',err);
+				}else{
+					req.session.user = user;
+					res.redirect('/');
+				}
+
+			});
+		}
+	})
+});
 module.exports = router;

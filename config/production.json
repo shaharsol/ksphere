@@ -6,6 +6,7 @@
     "client_secret": ""
   },
   "app": {
+    "domain": "ksphere.herokuapp.com",
     "cookie_secret": "abc"
   }
 }

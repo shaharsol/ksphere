@@ -6,6 +6,7 @@
     "client_secret": ""
   },
   "app": {
+    "domain": "localhost:3000",
     "cookie_secret": "abc"
   }
 }
