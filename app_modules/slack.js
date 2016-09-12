@@ -69,6 +69,7 @@ function processChannel(accessToken,question,callback){
       var form = {
         token: accessToken,
         name: util.format('KSphere %s',question._id.toString())
+        // name: util.format('ksp-%s',question.slack.text)
       }
       request.post('https://slack.com/api/channels.join',{form: form},function(error,response,body){
         if(error){
@@ -109,6 +110,25 @@ function processChannel(accessToken,question,callback){
         purpose: util.format('To discuss my question: %s',question.slack.text)
       }
       request.post('https://slack.com/api/channels.setPurpose',{form: form},function(error,response,body){
+        if(error){
+          callback(error)
+        }else if(response.statusCode > 300){
+          callback(response.statusCode + ' : ' + body)
+        }else{
+          var data = JSON.parse(body)
+          callback(null,channel)
+        }
+      })
+
+    },
+    // post question as first message
+    function(channel,callback){
+      var form = {
+        token: accessToken,
+        channel: channel.id,
+        text: question.slack.text
+      }
+      request.post('https://slack.com/api/chat.postMessage',{form: form},function(error,response,body){
         if(error){
           callback(error)
         }else if(response.statusCode > 300){
@@ -196,6 +216,25 @@ function processGroup(accessToken,question,callback){
         purpose: util.format('To discuss my question: %s',question.slack.text)
       }
       request.post('https://slack.com/api/groups.setPurpose',{form: form},function(error,response,body){
+        if(error){
+          callback(error)
+        }else if(response.statusCode > 300){
+          callback(response.statusCode + ' : ' + body)
+        }else{
+          var data = JSON.parse(body)
+          callback(null,channel)
+        }
+      })
+
+    },
+    // post question as first message
+    function(channel,callback){
+      var form = {
+        token: accessToken,
+        channel: channel.id,
+        text: question.slack.text
+      }
+      request.post('https://slack.com/api/chat.postMessage',{form: form},function(error,response,body){
         if(error){
           callback(error)
         }else if(response.statusCode > 300){
