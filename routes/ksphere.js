@@ -210,28 +210,7 @@ function savePayload(db,payload,callback){
   })
 }
 
-function channelJoinAndInvite(accessToken,question,callback){
-  async.waterfall([
-    function(callback){
-      var form = {
-        token: accessToken,
-        name: util.format('KSphere %s',question._id.toString())
-      }
-      request.post('https://slack.com/api/channels.join',{form: form},function(error,response,body){
-        if(error){
-          callback(error)
-        }else if(response.statusCode > 300){
-          callback(response.statusCode + ' : ' + body)
-        }else{
-          var data = JSON.parse(body)
-          callback(null,data.channel)
-        }
-      })
-    }
-  ],function(err){
-    callback(err)
-  })
-}
+
 
 function getTeam(db,teamID,callback){
   var teams = db.get('teams');
