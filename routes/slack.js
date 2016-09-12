@@ -13,9 +13,9 @@ router.get('/authorize', function(req, res, next) {
 	res.end();
 });
 
-router.get('/authorize-user/:payload_id', function(req, res, next) {
+router.get('/authorize-user/:payload_id/:team_id', function(req, res, next) {
 	req.session.payloadID = req.params.payload_id;
-	res.writeHead(302, {'Location': 'https://slack.com/oauth/authorize?client_id=' + config.get('slack.client_id') + '&redirect_uri=http://' + config.get('app.domain') + '/slack/authorized-user&scope=channels:write,groups:write' });
+	res.writeHead(302, {'Location': 'https://slack.com/oauth/authorize?client_id=' + config.get('slack.client_id') + '&redirect_uri=http://' + config.get('app.domain') + '/slack/authorized-user&team=' + req.params.team_id + '&scope=channels:write,groups:write' });
 	res.end();
 });
 
@@ -70,16 +70,18 @@ console.log('receievd this from slack: %s',util.inspect(data))
 					console.log('error inserting user %s',err);
 				}else{
 					req.session.user = user;
-
+console.log('AAA')
 					async.waterfall([
-						function(callbck){
+						function(callback){
 							var payloads = req.db.get('payloads');
 							payloads.findOne({_id: req.session.payloadID},function(err,payload){
+								console.log('BBB')
 								callback(err,payload)
 							})
 						},
 						function(payload,callback){
 							slack.handlePayload(req.db,payload,function(err){
+								console.log('CCC')
 								callback(err)
 							});
 						}

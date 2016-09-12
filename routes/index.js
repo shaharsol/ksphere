@@ -6,7 +6,11 @@ var util = require('util');
 
 /* GET users listing. */
 router.get('/', function(req, res, next) {
-	if(req.session.team){
+	if(req.session.user){
+		res.render('index/welcome-user',{
+			user: req.session.user
+		});
+	}else if(req.session.team){
 		res.render('index/welcome',{
 			team: req.session.team
 		});

@@ -3,7 +3,7 @@ var async = require('async')
 module.exports = {
   handlePayload: function(db,payload,callback){
     console.log('HERE')
-    callabck()
+    callback()
     // async.waterfall([
     //
     // ],function(err){
