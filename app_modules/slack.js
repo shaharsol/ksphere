@@ -38,7 +38,7 @@ module.exports = {
       // respond to user
       function(channel,callback){
         var answer = util.format('Channel <#%s|%s> has been created and the relevant people invited',channel.id,channel.name)
-        request.post(payload.response_url,{body: JSON.stringify({text: answer}})},function(error,response,body){
+        request.post(payload.response_url,{body: JSON.stringify({text: answer})},function(error,response,body){
           if(error){
             callback(error)
           }else if(response.statusCode > 300){
