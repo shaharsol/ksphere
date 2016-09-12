@@ -27,7 +27,7 @@ router.post('/', function(req, res, next) {
     console.log('somebody spoofing us!')
     // res.sendStatus(500);
   }else if(!req.body.text){
-    answerSlack(req.body.response_url,'Can\'t search an empty string partner',function(err){
+    answerSlack(req.body.response_url,{text: 'Can\'t search an empty string partner'},function(err){
       if(err){
         console.log('error answering slack: %s',err)
       }
@@ -48,7 +48,7 @@ router.post('/', function(req, res, next) {
           }else{
             console.log('matches are: %s',util.inspect(matches))
             if(matches.length == 0){
-              answer = util.format('Sorry pal. Nobody knows anything about *%s*...',req.body.text)
+              callback(null,null);
             }else{
               _.each(matches,function(match){
                 if(match.user){
@@ -81,9 +81,9 @@ router.post('/', function(req, res, next) {
               for(var i=0;i<maxIndex;i++){
                 answer += util.format('%d. <@%s|%s>\n',i+1,usersArray[i].user_id,usersArray[i].username);
               }
-
+              callback(null,answer)
             }
-            callback(null,answer)
+
 
           }
         })
@@ -91,7 +91,38 @@ router.post('/', function(req, res, next) {
 
       },
       function(answer,callback){
-        answerSlack(req.body.response_url,answer,function(err){
+        if(answer){
+          var answerToSend = {
+            text: answer,
+            attachments: [
+              {
+                text: 'Would you like to open it to discussion and invite the above mentioned people to answer?',
+                fallback: 'You are unable to post it as question',
+                callback_id: 'start discussion',
+                attachment_type: 'default',
+                actions: [
+                  {
+                    name: 'channel',
+                    text: 'Start a public discussion',
+                    type: 'button',
+                    value: 'channel'
+                  },
+                  {
+                    name: 'group',
+                    text: 'Start a private discussion',
+                    type: 'button',
+                    value: 'group'
+                  },
+
+                ]
+              }
+            ]
+          }
+
+        }else{
+          answerToSend = {text: util.format('Sorry pal. Nobody knows anything about *%s*...',req.body.text)}
+        }
+        answerSlack(req.body.response_url,answerToSend,function(err){
           callback(err)
         })
       }
@@ -113,7 +144,7 @@ function getTeam(db,teamID,callback){
 }
 
 function answerSlack(responseUrl,answer,callback){
-  request.post(responseUrl,{body: JSON.stringify({text: answer})},function(error,response,body){
+  request.post(responseUrl,{body: JSON.stringify(answer)},function(error,response,body){
     if(error){
       callback(error)
     }else if(response.statusCode > 300){
