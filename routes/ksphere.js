@@ -55,7 +55,7 @@ router.post('/', function(req, res, next) {
               callback(null,team,question,null);
             }else{
               _.each(matches,function(match){
-                if(match.user){
+                if(match.user && match.user != req.body.user_id){
 
                   // do we have this user in this array already?
                   var userIndex = _.findIndex(usersArray,function(user){

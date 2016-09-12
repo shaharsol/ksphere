@@ -70,7 +70,6 @@ function processChannel(accessToken,question,callback){
         token: accessToken,
         name: util.format('KSphere %s',question._id.toString())
       }
-      console.log('AAA')
       request.post('https://slack.com/api/channels.join',{form: form},function(error,response,body){
         if(error){
           callback(error)
@@ -90,7 +89,6 @@ function processChannel(accessToken,question,callback){
         channel: channel.id,
         topic: question.slack.text
       }
-      console.log('BBB')
       request.post('https://slack.com/api/channels.setTopic',{form: form},function(error,response,body){
         if(error){
           callback(error)
@@ -110,7 +108,6 @@ function processChannel(accessToken,question,callback){
         channel: channel.id,
         purpose: util.format('To discuss my question: %s',question.slack.text)
       }
-      console.log('BBB')
       request.post('https://slack.com/api/channels.setPurpose',{form: form},function(error,response,body){
         if(error){
           callback(error)
@@ -125,8 +122,7 @@ function processChannel(accessToken,question,callback){
     },
     // invite matched ppl
     function(channel,callback){
-      console.log('CCC')
-      async.each(question.matched_users,function(matchedUser){
+      async.each(question.matched_users,function(matchedUser,callback){
         var form = {
           token: accessToken,
           channel: channel.id,
@@ -136,13 +132,15 @@ function processChannel(accessToken,question,callback){
           if(error){
             callback(error)
           }else if(response.statusCode > 300){
+            console.log('errir us %s',response.statusCode + ' : ' + body)
             callback(response.statusCode + ' : ' + body)
           }else{
-            callback(null)
+            callback()
           }
         })
 
       },function(err){
+        console.log('channel at the end of async is %s',util.inspect(channel))
         callback(err,channel)
       })
     },
