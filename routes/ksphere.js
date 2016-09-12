@@ -22,7 +22,6 @@ router.post('/', function(req, res, next) {
 
   console.log('recieved post: %s', util.inspect(req.body))
   var usersArray = [];
-  var answer = '';
   if(req.body.token != config.get('slack.command_token')){
     console.log('somebody spoofing us!')
     // res.sendStatus(500);
@@ -41,6 +40,11 @@ router.post('/', function(req, res, next) {
         })
       },
       function(team,callback){
+        logQuestion(req.db,req.body,function(err,question){
+          callback(err,team,question)
+        })
+      },
+      function(team,question,callback){
         console.log('giot team: %s',util.inspect(team))
         searchSlack(team.access_token,req.body.text,function(err,matches){
           if(err){
@@ -48,7 +52,7 @@ router.post('/', function(req, res, next) {
           }else{
             console.log('matches are: %s',util.inspect(matches))
             if(matches.length == 0){
-              callback(null,null);
+              callback(null,team,question,null);
             }else{
               _.each(matches,function(match){
                 if(match.user){
@@ -74,14 +78,17 @@ router.post('/', function(req, res, next) {
               // sort the array accoridng to count desc
               usersArray = _.sortBy(usersArray,'count').reverse();
 
+              var matchedUsers = [];
               console.log('users array is: %s',util.inspect(usersArray));
 
               var maxIndex = usersArray.length > 3 ? 3 : usersArray.length;
-              answer += util.format('Your best matches for *%s* are:\n',req.body.text);
+              // answer += util.format('Your best matches for *%s* are:\n',req.body.text);
               for(var i=0;i<maxIndex;i++){
-                answer += util.format('%d. <@%s|%s>\n',i+1,usersArray[i].user_id,usersArray[i].username);
+                matchedUsers.push(usersArray[i]);
+                // answer += util.format('%d. <@%s|%s>\n',i+1,usersArray[i].user_id,usersArray[i].username);
               }
-              callback(null,answer)
+              // callback(null,answer)
+              callback(null,team,question,matchedUsers)
             }
 
 
@@ -90,7 +97,26 @@ router.post('/', function(req, res, next) {
 
 
       },
-      function(answer,callback){
+      function(team,question,matchedUsers,callback){
+        if(!matchedUsers){
+          callback(null,question,null)
+        }else{
+          addPeopleToQuestion(req.db,question,matchedUsers,function(err,question){
+            if(err){
+              callback(err)
+            }else{
+              var answer = util.format('Your best matches for *%s* are:\n',req.body.text);
+              for(var i=0;i<matchedUsers.length;i++){
+                answer += util.format('%d. <@%s|%s>\n',i+1,matchedUsers[i].user_id,matchedUsers[i].username);
+              }
+              callback(null,question,answer)
+            }
+
+          })
+        }
+
+      },
+      function(question,answer,callback){
         if(answer){
           var answerToSend = {
             text: answer,
@@ -98,7 +124,7 @@ router.post('/', function(req, res, next) {
               {
                 text: 'Would you like to open it to discussion and invite the above mentioned people to answer?',
                 fallback: 'You are unable to post it as question',
-                callback_id: 'start discussion',
+                callback_id: question._id.toString(),
                 attachment_type: 'default',
                 actions: [
                   {
@@ -136,6 +162,11 @@ router.post('/', function(req, res, next) {
 });
 
 
+router.post('/button-pressed', function(req, res, next) {
+  console.log('body is: %s',util.inspect(req.body.payload))
+})
+
+
 function getTeam(db,teamID,callback){
   var teams = db.get('teams');
   teams.findOne({team_id: teamID},function(err,team){
@@ -143,6 +174,29 @@ function getTeam(db,teamID,callback){
   })
 }
 
+function logQuestion(db,slackPost,callback){
+  var questions = db.get('questions');
+  questions.insert({
+    slack: slackPost
+  },function(err,question){
+    callback(err,question)
+  })
+}
+
+function addPeopleToQuestion(db,question,macthedUsers,callback){
+  var questions = db.get('questions');
+  questions.findOneAndUpdate({
+    _id: question._id
+  },{
+    $set: {
+      matched_users: macthedUsers
+    }
+  },{
+    new: true
+  },function(err,question){
+    callback(err,question)
+  })
+}
 function answerSlack(responseUrl,answer,callback){
   request.post(responseUrl,{body: JSON.stringify(answer)},function(error,response,body){
     if(error){
