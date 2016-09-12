@@ -194,7 +194,7 @@ function handleUnregisteredUser(db,payload,callback){
       })
     },
     function(payload,callback){
-      answerSlack(payload.response_url,{text: util.format('To complete thw action, please authorize us at http://%s/slack/authorize-user/%s/%s',config.get('app.domain'),payload._id,payload.team.id)},function(err){
+      answerSlack(payload.response_url,{text: util.format('To complete the action, please authorize us to create channels and groups on your behalf at http://%s/slack/authorize-user/%s/%s',config.get('app.domain'),payload._id,payload.team.id)},function(err){
         callback(err)
       })
     }
