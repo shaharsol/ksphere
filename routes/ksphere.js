@@ -98,7 +98,7 @@ router.post('/', function(req, res, next) {
 
       },
       function(team,question,matchedUsers,callback){
-        if(!matchedUsers){
+        if(!matchedUsers || matchedUsers.length == 0){
           callback(null,question,null)
         }else{
           addPeopleToQuestion(req.db,question,matchedUsers,function(err,question){
