@@ -23,6 +23,7 @@ router.get('/', function(req, res, next) {
 
 router.get('/logout', function(req, res, next) {
 	delete req.session.team;
+	delete req.session.user;
 	res.redirect('/');
 });
 
