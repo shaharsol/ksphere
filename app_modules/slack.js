@@ -59,6 +59,22 @@ module.exports = {
       callback(err)
     })
 
+  },
+  getUser: function(userID,accessToken,callback){
+    var qs = {
+      token: accessToken,
+      user: userID
+    }
+    request.post('https://slack.com/api/users.profile.get',{qs: qs},function(error,response,body){
+      if(error){
+        callback(error)
+      }else if(response.statusCode > 300){
+        callback(response.statusCode + ' : ' + body)
+      }else{
+        var data = JSON.parse(body)
+        callback(null,data)
+      }
+    })
   }
 }
 
