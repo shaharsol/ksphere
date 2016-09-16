@@ -9,7 +9,7 @@ var slack = require('../app_modules/slack')
 router.get('/', function(req, res, next) {
 	if(req.session.user){
 		slack.getUser(req.session.user.user_id,req.session.user.access_token,function(err,user){
-console.log('user is %s',util.inspect(user))			
+console.log('user is %s',util.inspect(user))
 			res.render('index/welcome-user',{
 				user: user
 			});
@@ -30,6 +30,10 @@ router.get('/logout', function(req, res, next) {
 	delete req.session.team;
 	delete req.session.user;
 	res.redirect('/');
+});
+
+router.get('/privacy', function(req, res, next) {
+	res.render('index/privacy',{});
 });
 
 module.exports = router;
