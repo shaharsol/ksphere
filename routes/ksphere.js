@@ -31,6 +31,12 @@ router.post('/', function(req, res, next) {
         console.log('error answering slack: %s',err)
       }
     })
+  }else if(req.body.text == 'help'){
+    answerSlack(req.body.response_url,{text: 'Finds team members who are most likely to answer your question\nUSage: /whoknows {question}'},function(err){
+      if(err){
+        console.log('error answering slack: %s',err)
+      }
+    })
   }else{
 
     async.waterfall([

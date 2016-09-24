@@ -3,5 +3,12 @@
 		<h1>KSphere lets you search Slack for knowledgeable people in your team.</h1>
     <h2>So you can know who to turn to with any question you have.</h2>
     <a href="https://slack.com/oauth/authorize?scope=commands,search:read&client_id=<%=config.get('slack.client_id')%>"><img alt="Add to Slack" height="40" width="139" src="https://platform.slack-edge.com/img/add_to_slack.png" srcset="https://platform.slack-edge.com/img/add_to_slack.png 1x, https://platform.slack-edge.com/img/add_to_slack@2x.png 2x" /></a>
+		<h3 style="margin-top:50px;">How it works:</h3>
+		<ol>
+			<li>You look for information with the /whoknows commad, for example <i>/whoknows what's the difference between docker and vagrant</i></li>
+			<li>In return, you get a list of up to 3 members of your team who are most likely to know the answer to your question</li>
+			<li>You can use Slack to contact them directly now, or -- click either the <i>Start a public discussion</i> or <i>Start a private discussion</i> button that we provide with the member list to quickly create a public/private channel/group to discuss this question with the team members KSphere have found</li>
+		</ol>
+		<h4 style="margin-top:50px;">For feedback & support, please contact <a href="mailto:shaharasol@tikalk.com">shaharasol@tikalk.com</a></h4>
 	</div>
 </div>
