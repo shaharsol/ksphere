@@ -15,20 +15,27 @@ module.exports = {
         })
       },
       function(user,callback){
+        var teams = db.get('teams');
+        teams.findOne({team_id: payload.team.id},function(err,team){
+          console.log('team is %s',util.inspect(team))
+          callback(err,user,team)
+        })
+      },
+      function(user,team,callback){
         var questions = db.get('questions');
         questions.findOne({_id: payload.callback_id},function(err,question){
           console.log('q is %s',util.inspect(question))
-          callback(err,user,question)
+          callback(err,user,team,question)
         })
       },
-      function(user,question,callback){
+      function(user,team,question,callback){
         console.log('payload is %s',util.inspect(payload))
         if(payload.actions[0].value == 'channel'){
-          processChannel(user.access_token,question,function(err,channel){
+          processChannel(user.access_token,team.access_token,question,function(err,channel){
             callback(err,channel)
           })
         }else if(payload.actions[0].value == 'group'){
-          processGroup(user.access_token,question,function(err,group){
+          processGroup(user.access_token,team.access_token,question,function(err,group){
             callback(err,group)
           })
         }else{
@@ -78,7 +85,7 @@ module.exports = {
   }
 }
 
-function processChannel(accessToken,question,callback){
+function processChannel(accessToken,teamAccessToken,question,callback){
   async.waterfall([
     // create channel
     function(callback){
@@ -140,9 +147,9 @@ function processChannel(accessToken,question,callback){
     // post question as first message
     function(channel,callback){
       var form = {
-        token: accessToken,
+        token: teamAccessToken,
         channel: channel.id,
-        text: question.slack.text
+        text: util.format('<@%s|%s> would like to discuss: %s',question.slack.user_id,question.slack.user_name,question.slack.text)
       }
       request.post('https://slack.com/api/chat.postMessage',{form: form},function(error,response,body){
         if(error){
@@ -185,7 +192,7 @@ function processChannel(accessToken,question,callback){
   })
 }
 
-function processGroup(accessToken,question,callback){
+function processGroup(accessToken,teamAccessToken,question,callback){
   async.waterfall([
     // create channel
     function(callback){
@@ -246,9 +253,9 @@ function processGroup(accessToken,question,callback){
     // post question as first message
     function(channel,callback){
       var form = {
-        token: accessToken,
+        token: teamAccessToken,
         channel: channel.id,
-        text: question.slack.text
+        text: util.format('<@%s|%s> would like to discuss: %s',question.slack.user_id,question.slack.user_name,question.slack.text)
       }
       request.post('https://slack.com/api/chat.postMessage',{form: form},function(error,response,body){
         if(error){

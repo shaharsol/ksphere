@@ -15,7 +15,7 @@ router.get('/authorize', function(req, res, next) {
 
 router.get('/authorize-user/:payload_id/:team_id', function(req, res, next) {
 	req.session.payloadID = req.params.payload_id;
-	res.writeHead(302, {'Location': 'https://slack.com/oauth/authorize?client_id=' + config.get('slack.client_id') + '&redirect_uri=http://' + config.get('app.domain') + '/slack/authorized-user&team=' + req.params.team_id + '&scope=users.profile:read,channels:write,groups:write,chat:write:user' });
+	res.writeHead(302, {'Location': 'https://slack.com/oauth/authorize?client_id=' + config.get('slack.client_id') + '&redirect_uri=http://' + config.get('app.domain') + '/slack/authorized-user&team=' + req.params.team_id + '&scope=users.profile:read,channels:write,groups:write' });
 	res.end();
 });
 
