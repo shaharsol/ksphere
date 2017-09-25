@@ -35,7 +35,7 @@ router.get('/authorized', function(req, res, next) {
 			var data = JSON.parse(body);
 console.log('receievd this from slack: %s',util.inspect(data))
 			var teams = req.db.get('teams');
-			teams.findAndModify({'team_id': data.team_id},data,{upsert: true,new: true},function(err,team){
+			teams.findOneAndUpdate({'team_id': data.team_id},data,{upsert: true,new: true},function(err,team){
 				if(err){
 					console.log('error inserting user %s',err);
 				}else{
@@ -78,7 +78,7 @@ router.get('/authorized-user', function(req, res, next) {
 		},
 		function(user,callback){
 			var users = req.db.get('users');
-			users.findAndModify({'user_id': user.user_id},user,{upsert: true,new: true},function(err,user){
+			users.findOneAndUpdate({'user_id': user.user_id},user,{upsert: true,new: true},function(err,user){
 				callback(err,user)
 			})
 		},
@@ -114,7 +114,7 @@ router.get('/authorized-user', function(req, res, next) {
 // 			var data = JSON.parse(body);
 // console.log('receievd this from slack: %s',util.inspect(data))
 // 			var users = req.db.get('users');
-// 			users.findAndModify({'user_id': data.user_id},data,{upsert: true,new: true},function(err,user){
+// 			users.findOneAndUpdate({'user_id': data.user_id},data,{upsert: true,new: true},function(err,user){
 // 				if(err){
 // 					console.log('error inserting user %s',err);
 // 				}else{
