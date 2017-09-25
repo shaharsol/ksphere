@@ -9,7 +9,7 @@ var slack = require('../app_modules/slack')
 
 /* GET users listing. */
 router.get('/authorize', function(req, res, next) {
-	res.writeHead(302, {'Location': 'https://slack.com/oauth/authorize?client_id=' + config.get('slack.client_id') + '&scope=chat:write:bot' });
+	res.writeHead(302, {'Location': 'https://slack.com/oauth/authorize?client_id=' + config.get('slack.client_id') /*+ '&scope=chat:write:bot'*/ });
 	res.end();
 });
 
