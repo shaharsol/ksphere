@@ -8,5 +8,8 @@
   "app": {
     "domain": "ksphere.herokuapp.com",
     "cookie_secret": "abc"
-  }
+  },
+  "google": {
+		"api_key": ""
+	}
 }

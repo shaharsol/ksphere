@@ -8,5 +8,8 @@
   "app": {
     "domain": "localhost:3000",
     "cookie_secret": "abc"
-  }
+  },
+  "google": {
+		"api_key": ""
+	}
 }

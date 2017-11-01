@@ -51,8 +51,15 @@ router.post('/', function(req, res, next) {
         })
       },
       function(team,question,callback){
+        buildSearchQuery(req.body.text,function(err,query){
+          callback(err,team,question,query)
+        })
+      },
+      function(team,question,query,callback){
         console.log('giot team: %s',util.inspect(team))
-        searchSlack(team.access_token,req.body.text,function(err,matches){
+        console.log('query is %s',query)
+        searchSlack(team.access_token,query,function(err,matches){
+        // searchSlack(team.access_token,req.body.text,function(err,matches){
           if(err){
             callback(err)
           }else{
@@ -306,6 +313,31 @@ function searchSlack(accessToken,query,callback){
   		callback(err,matches)
   	}
   );
+}
+
+function buildSearchQuery(q,callback){
+	var form = {
+	  "document": {
+	    type: 'PLAIN_TEXT',
+	    content: q
+	  },
+	  "encodingType": 'NONE',
+	}
+
+	request.post('https://language.googleapis.com/v1beta2/documents:analyzeEntities?key=' + config.get('google.api_key'),{json: true, body: form},function(error,response,body){
+		if(error){
+			callback(error)
+		}else if(response.statusCode != 200){
+			callback(response.statusCode + ' : ' + util.inspect(body));
+		}else{
+			var entityNames = _.map(body.entities,function(entity){
+				return entity.name
+			});
+			var q = entityNames.join(' ')
+			callback(null,q)
+		}
+
+	})
 }
 
 module.exports = router;
